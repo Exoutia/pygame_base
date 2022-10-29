@@ -8,7 +8,7 @@ def display_score():
     score_surf = text_font.render(f"score: {curr_time}", False, (12, 122, 12))
     score_rect = score_surf.get_rect(center = (400, 50))
     screen.blit(score_surf, score_rect)
-    # print(curr_time)
+    return curr_time
 
 
 pygame.init()
@@ -18,6 +18,8 @@ clock = pygame.time.Clock()
 text_font = pygame.font.Font('font/Pixeltype.ttf', 50)
 game_active = True
 start_time = 0
+score = 0
+
 
 # Game interface
 game_name = text_font.render('Pixel Runner', False, '#0A2559')
@@ -76,7 +78,7 @@ while True:
         # pygame.draw.rect(screen, '#B4DEE4', score_rect, border_radius=20)
         # pygame.draw.rect(screen, '#B4DEE4', score_rect, 10, 20)
         # screen.blit(score_surf, score_rect)
-        display_score()
+        score = display_score()
 
         ufo_rect.right -= 5
         if ufo_rect.right < 0:
@@ -99,6 +101,10 @@ while True:
         # screen.blit(game_over_surf, (0,0))
         screen.fill((94,129,162))
         screen.blit(player_stand, player_stand_rect)
+
+        score_msg = text_font.render(f"Your Score: {score}", False, '#0A2559')
+        score_msg_rect = score_msg.get_rect(center = (600, 200))
+        screen.blit(score_msg, score_msg_rect)
         screen.blit(game_name, game_name_rect)
         screen.blit(inst_sur, inst_rect)
 
