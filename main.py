@@ -1,6 +1,7 @@
 
 import pygame
 from sys import exit
+from random import randint
 
 
 def display_score():
@@ -10,6 +11,15 @@ def display_score():
     screen.blit(score_surf, score_rect)
     return curr_time
 
+def obstacle_movement(obstacle_list: list):
+    if obstacle_list:
+        for obstacle_rect in obstacle_list:
+            obstacle_rect.x -= 5
+            screen.blit(ufo_surf, obstacle_rect)
+
+        obstacle_list = [obstacle for obstacle in obstacle_list if obstacle.x> -100]
+        return obstacle_list
+    else: return []
 
 pygame.init()
 screen = pygame.display.set_mode((800, 400))
@@ -21,13 +31,6 @@ start_time = 0
 score = 0
 
 
-# Game interface
-game_name = text_font.render('Pixel Runner', False, '#0A2559')
-game_name_rect = game_name.get_rect(center = (400, 80))
-inst_sur = text_font.render("Press 'SPACE' to restart", False, '#0A2559')
-inst_rect = inst_sur.get_rect(midbottom = (400, 350))
-
-
 ground_surf = pygame.image.load('graphics/ground.png').convert()
 sky_surf = pygame.image.load('graphics/wall.png').convert()
 sky_surf = pygame.transform.scale(sky_surf, (800, 300))
@@ -36,8 +39,11 @@ sky_surf = pygame.transform.scale(sky_surf, (800, 300))
 # score_surf = text_font.render('Score: 00', False, (12,122,12))
 # score_rect = score_surf.get_rect(center = (400, 50))
 
+# Obstacle
 ufo_surf = pygame.image.load('graphics/animal/ufo.png').convert_alpha()
-ufo_rect = ufo_surf.get_rect(center = (700, 250))
+
+obstacle_rect_list = []
+
 
 player_surf = pygame.image.load('graphics/animal/player/player_stand.png').convert_alpha()
 player_rect = player_surf.get_rect(midbottom = (80, 300))
@@ -48,6 +54,14 @@ player_stand = pygame.image.load('graphics/animal/player/player_stand.png').conv
 player_stand = pygame.transform.rotozoom(player_stand,0,2)
 player_stand_rect = player_stand.get_rect(center=(400, 200))
 
+game_name = text_font.render('Pixel Runner', False, '#0A2559')
+game_name_rect = game_name.get_rect(center = (400, 80))
+inst_sur = text_font.render("Press 'SPACE' to restart", False, '#0A2559')
+inst_rect = inst_sur.get_rect(midbottom = (400, 350))
+
+# Timer
+obstacle_timer = pygame.USEREVENT + 1
+pygame.time.set_timer(obstacle_timer, 800)
 
 while True:
     for event in pygame.event.get():
@@ -68,22 +82,21 @@ while True:
         else:
             if event.type == pygame.KEYDOWN and event.key == pygame.K_SPACE:
                     game_active = True
-                    ufo_rect.left = 800
+                    obstacle_rect_list = [] 
                     start_time = pygame.time.get_ticks()
+
+        if event.type == obstacle_timer and game_active:
+            enemy_rect = ufo_surf.get_rect(midright = (randint(900, 1000), 170))
+            obstacle_rect_list.append(enemy_rect)
+
 
     if game_active:
 
         screen.blit(ground_surf, (0,300))
         screen.blit(sky_surf, (0,0))
-        # pygame.draw.rect(screen, '#B4DEE4', score_rect, border_radius=20)
-        # pygame.draw.rect(screen, '#B4DEE4', score_rect, 10, 20)
-        # screen.blit(score_surf, score_rect)
         score = display_score()
 
-        ufo_rect.right -= 5
-        if ufo_rect.right < 0:
-            ufo_rect.left = 800
-        screen.blit(ufo_surf, ufo_rect)
+
 
 
         #  Player
@@ -93,8 +106,14 @@ while True:
             player_rect.bottom = 300
         screen.blit(player_surf, player_rect)
 
+        # Obstacle movement
+        enemy_rect = None
+        obstacle_rect_list = obstacle_movement(obstacle_rect_list)
+        if obstacle_rect_list:
+            enemy_rect = obstacle_rect_list[0]
+
         # Collisions
-        if ufo_rect.colliderect(player_rect):
+        if enemy_rect and enemy_rect.colliderect(player_rect):
             game_active = False
 
     else:
