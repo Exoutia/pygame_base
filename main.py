@@ -31,6 +31,18 @@ def collision_check(player_rect, obstacle_list):
                 return False
     return True
 
+def player_animation():
+    # Player animation walking if player is in ground
+    global player_surf, player_index
+    if player_rect.bottom < 300:
+        player_surf = player_jump
+    else:
+        player_surf = player_walk[int(player_index)]
+        player_index += 0.1
+        if player_index >= len(player_walk):
+            player_index = 0
+
+
 pygame.init()
 screen = pygame.display.set_mode((800, 400))
 pygame.display.set_caption('Runner')
@@ -61,7 +73,13 @@ snail_surf = pygame.image.load('graphics/animal/enemy/snail.png').convert_alpha(
 obstacle_rect_list = []
 
 
-player_surf = pygame.image.load('graphics/animal/player/player_stand.png').convert_alpha()
+player_walk_1 = pygame.image.load('graphics/animal/player/player_walk_1.png').convert_alpha()
+player_walk_2 = pygame.image.load('graphics/animal/player/player_walk_2.png').convert_alpha()
+player_walk = [player_walk_1, player_walk_2]
+player_index = 0
+player_jump = pygame.image.load('graphics/animal/player/jump.png').convert_alpha()
+
+player_surf = player_walk[player_index]
 player_rect = player_surf.get_rect(midbottom = (80, 300))
 player_grav = 0
 
@@ -77,7 +95,7 @@ inst_rect = inst_sur.get_rect(midbottom = (400, 350))
 
 # Timer
 obstacle_timer = pygame.USEREVENT + 1
-pygame.time.set_timer(obstacle_timer, 1200)
+pygame.time.set_timer(obstacle_timer, 1500)
 
 while True:
     for event in pygame.event.get():
@@ -121,6 +139,8 @@ while True:
         player_rect.bottom += player_grav
         if player_rect.bottom >= 300:
             player_rect.bottom = 300
+
+        player_animation()
         screen.blit(player_surf, player_rect)
 
         # Obstacle movement
