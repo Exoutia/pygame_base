@@ -53,7 +53,7 @@ start_time = 0
 score = 0
 
 # Sprite sheet
-sprite_sheet = pygame.image.load('graphics/spritesheet.png').convert_alpha()
+# sprite_sheet = pygame.image.load('graphics/spritesheet.png').convert_alpha()
 
 
 # Backgrounds
