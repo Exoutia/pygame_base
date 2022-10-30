@@ -15,11 +15,21 @@ def obstacle_movement(obstacle_list: list):
     if obstacle_list:
         for obstacle_rect in obstacle_list:
             obstacle_rect.x -= 5
-            screen.blit(ufo_surf, obstacle_rect)
+            if obstacle_rect.bottom == 300:
+                screen.blit(snail_surf, obstacle_rect)
+            else:
+                screen.blit(ufo_surf, obstacle_rect)
 
         obstacle_list = [obstacle for obstacle in obstacle_list if obstacle.x> -100]
         return obstacle_list
     else: return []
+
+def collision_check(player_rect, obstacle_list):
+    if obstacle_list:
+        for obstacle_rect in obstacle_list:
+            if player_rect.colliderect(obstacle_rect):
+                return False
+    return True
 
 pygame.init()
 screen = pygame.display.set_mode((800, 400))
@@ -30,9 +40,13 @@ game_active = True
 start_time = 0
 score = 0
 
+# Sprite sheet
+sprite_sheet = pygame.image.load('graphics/spritesheet.png').convert_alpha()
 
-ground_surf = pygame.image.load('graphics/ground.png').convert()
-sky_surf = pygame.image.load('graphics/wall.png').convert()
+
+# Backgrounds
+ground_surf = pygame.image.load('graphics/backgrounds/ground.png').convert()
+sky_surf = pygame.image.load('graphics/backgrounds/wall.png').convert()
 sky_surf = pygame.transform.scale(sky_surf, (800, 300))
 
 
@@ -40,7 +54,9 @@ sky_surf = pygame.transform.scale(sky_surf, (800, 300))
 # score_rect = score_surf.get_rect(center = (400, 50))
 
 # Obstacle
-ufo_surf = pygame.image.load('graphics/animal/ufo.png').convert_alpha()
+ufo_surf = pygame.image.load('graphics/animal/enemy/ufo.png').convert_alpha()
+
+snail_surf = pygame.image.load('graphics/animal/enemy/snail.png').convert_alpha()
 
 obstacle_rect_list = []
 
@@ -61,7 +77,7 @@ inst_rect = inst_sur.get_rect(midbottom = (400, 350))
 
 # Timer
 obstacle_timer = pygame.USEREVENT + 1
-pygame.time.set_timer(obstacle_timer, 800)
+pygame.time.set_timer(obstacle_timer, 1200)
 
 while True:
     for event in pygame.event.get():
@@ -82,12 +98,13 @@ while True:
         else:
             if event.type == pygame.KEYDOWN and event.key == pygame.K_SPACE:
                     game_active = True
-                    obstacle_rect_list = [] 
                     start_time = pygame.time.get_ticks()
 
         if event.type == obstacle_timer and game_active:
-            enemy_rect = ufo_surf.get_rect(midright = (randint(900, 1000), 170))
-            obstacle_rect_list.append(enemy_rect)
+            if randint(0, 1):
+                obstacle_rect_list.append(snail_surf.get_rect(midbottom = (randint(900, 1200), 300)))
+            else:
+                obstacle_rect_list.append(ufo_surf.get_rect(midbottom = (randint(900, 1100), 170)))
 
 
     if game_active:
@@ -107,19 +124,18 @@ while True:
         screen.blit(player_surf, player_rect)
 
         # Obstacle movement
-        enemy_rect = None
         obstacle_rect_list = obstacle_movement(obstacle_rect_list)
-        if obstacle_rect_list:
-            enemy_rect = obstacle_rect_list[0]
 
         # Collisions
-        if enemy_rect and enemy_rect.colliderect(player_rect):
-            game_active = False
+        game_active = collision_check(player_rect, obstacle_rect_list)
 
     else:
         # screen.blit(game_over_surf, (0,0))
         screen.fill((94,129,162))
         screen.blit(player_stand, player_stand_rect)
+        obstacle_rect_list.clear()
+        player_rect.midbottom = (80, 300)
+        player_grav = 0
 
         score_msg = text_font.render(f"Your Score: {score}", False, '#0A2559')
         score_msg_rect = score_msg.get_rect(center = (600, 200))
