@@ -4,6 +4,53 @@ from sys import exit
 from random import randint
 
 
+class Player(pygame.sprite.Sprite):
+    def __init__(self) -> None:
+        super().__init__()
+        player_walk_1 = pygame.image.load('graphics/animal/player/player_walk_1.png').convert_alpha()
+        player_walk_2 = pygame.image.load('graphics/animal/player/player_walk_2.png').convert_alpha()
+        self.player_walk = [player_walk_1, player_walk_2]
+        self.player_index = 0
+        self.player_jump = pygame.image.load('graphics/animal/player/jump.png').convert_alpha()
+
+        self.image = self.player_walk[self.player_index]
+        self.rect = self.image.get_rect(midbottom=(150, 300))
+        self.gravity = 0
+
+    def animation_state(self):
+        if self.rect.bottom < 300:
+            self.image = self.player_jump
+        else:
+            self.player_index += 0.1
+            if self.player_index >= len(self.player_walk):
+                self.player_index = 0
+            self.image = self.player_walk[int(self.player_index)]
+
+    def player_input(self):
+        keys = pygame.key.get_pressed()
+        if keys[pygame.K_SPACE] and self.rect.bottom >= 300:
+            self.gravity -= 20
+
+    def apply_gravity(self):
+        self.gravity += 1
+        self.rect.y += self.gravity
+
+        if self.rect.bottom >= 300:
+            self.rect.bottom = 300
+
+    def update(self):
+        self.player_input()
+        self.apply_gravity()
+        self.animation_state()
+
+
+
+
+
+
+
+
+
 def display_score():
     curr_time = pygame.time.get_ticks()//1000 - start_time//1000
     score_surf = text_font.render(f"score: {curr_time}", False, (12, 122, 12))
@@ -52,9 +99,8 @@ game_active = True
 start_time = 0
 score = 0
 
-# Sprite sheet
-# sprite_sheet = pygame.image.load('graphics/spritesheet.png').convert_alpha()
-
+player = pygame.sprite.GroupSingle()
+player.add(Player())
 
 # Backgrounds
 ground_surf = pygame.image.load('graphics/backgrounds/ground.png').convert()
@@ -173,6 +219,8 @@ while True:
 
         player_animation()
         screen.blit(player_surf, player_rect)
+        player.draw(screen)
+        player.update()
 
         # Obstacle movement
         obstacle_rect_list = obstacle_movement(obstacle_rect_list)
