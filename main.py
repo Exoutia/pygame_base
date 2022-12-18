@@ -44,9 +44,38 @@ class Player(pygame.sprite.Sprite):
         self.animation_state()
 
 
+class Obstacle(pygame.sprite.Sprite):
+    def __init__(self, type) -> None:
+        super().__init__()
+        if type == 'fly':
+            fly_1 = pygame.image.load('graphics/animal/enemy/Fly1.png').convert_alpha()
+            fly_2 = pygame.image.load('graphics/animal/enemy/Fly2.png').convert_alpha()
+            self.frames = [fly_1, fly_2]
+            y_pos = 210
+        else:
+            snail_1 = pygame.image.load('graphics/animal/enemy/snail.png').convert_alpha()
+            snail_2 = pygame.image.load('graphics/animal/enemy/snail2.png').convert_alpha()
+            self.frames = [snail_1, snail_2]
+            y_pos = 300
 
+        self.animation_index = 0
+        self.image = self.frames[self.animation_index]
+        self.rect = self.image.get_rect(midbottom=(randint(800, 1200), y_pos))
 
+    def animation_state(self):
+        self.animation_index += 0.1
+        if self.animation_index >= len(self.frames):
+            self.animation_index = 0
+        self.image = self.frames[int(self.animation_index)]
 
+    def update(self):
+        self.animation_state()
+        self.rect.x -= 5
+        self.destroy()
+
+    def destroy(self):
+        if self.rect.x <= -100:
+            self.kill()
 
 
 
@@ -99,8 +128,13 @@ game_active = True
 start_time = 0
 score = 0
 
+# Groups
 player = pygame.sprite.GroupSingle()
 player.add(Player())
+
+
+# Obstacle Groups
+obstacle_group = pygame.sprite.Group()
 
 # Backgrounds
 ground_surf = pygame.image.load('graphics/backgrounds/ground.png').convert()
@@ -221,6 +255,9 @@ while True:
         screen.blit(player_surf, player_rect)
         player.draw(screen)
         player.update()
+
+        obstacle_group.draw(screen)
+        obstacle_group.update()
 
         # Obstacle movement
         obstacle_rect_list = obstacle_movement(obstacle_rect_list)
